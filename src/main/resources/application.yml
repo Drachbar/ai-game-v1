@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: ai-game-v1
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: ai-game
