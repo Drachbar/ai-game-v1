@@ -1,3 +1,4 @@
 rootProject.name = 'ai-game-v1'
 
 include 'backend'
+include 'frontend'

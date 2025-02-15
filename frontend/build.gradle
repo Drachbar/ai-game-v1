@@ -1,0 +1,19 @@
+plugins {
+  id 'base'
+}
+
+group = 'se.drachbar'
+version = '1.0.0'
+
+def npmBuildDir = file("${project.projectDir}/dist")
+
+tasks.register('cleanFrontend', Delete) {
+  delete npmBuildDir
+}
+
+tasks.register('serveFrontend', Exec) {
+  workingDir project.projectDir
+  commandLine 'node', '--experimental-modules', 'node_modules/@angular/cli/bin/ng.js', 'serve'
+}
+
+clean.dependsOn cleanFrontend
