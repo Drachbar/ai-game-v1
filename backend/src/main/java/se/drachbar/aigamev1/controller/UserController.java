@@ -8,7 +8,7 @@ import se.drachbar.aigamev1.model.User;
 import se.drachbar.aigamev1.repository.UserRepository;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 
