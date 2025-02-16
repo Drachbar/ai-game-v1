@@ -1,3 +1,11 @@
 <button (click)="getUsers()">Hämta användare</button>
 <button (click)="addUser()">Lägg till användare</button>
+
+<div>
+  <input [(ngModel)]="message" placeholder="Skriv ett meddelande..." />
+  <button (click)="send()">Skicka</button>
+  <ul>
+    <li *ngFor="let msg of messages">{{ msg }}</li>
+  </ul>
+</div>
 <router-outlet />

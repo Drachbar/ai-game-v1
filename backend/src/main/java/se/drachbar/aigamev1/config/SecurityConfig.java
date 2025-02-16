@@ -23,6 +23,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeExchange(auth -> auth
                         .pathMatchers("/api/users/**").permitAll()
+                        .pathMatchers("/ws/chat/**").permitAll()
                         .anyExchange().permitAll()).httpBasic(Customizer.withDefaults());
         return http.build();
     }
