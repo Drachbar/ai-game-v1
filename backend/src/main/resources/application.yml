@@ -1,6 +1,8 @@
 spring:
   application:
     name: ai-game-v1
+  profiles:
+    include: secrets
   data:
     mongodb:
       host: localhost
