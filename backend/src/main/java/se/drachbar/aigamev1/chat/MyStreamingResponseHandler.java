@@ -21,7 +21,7 @@ public class MyStreamingResponseHandler implements StreamingChatResponseHandler 
 
     @Override
     public void onCompleteResponse(ChatResponse completeResponse) {
-        session.send(Mono.just(session.textMessage("Complete: " + completeResponse.aiMessage()))).subscribe();
+        session.send(Mono.just(session.textMessage("<complete-response>" + completeResponse.aiMessage().text() + "</complete-response>"))).subscribe();
     }
 
     @Override

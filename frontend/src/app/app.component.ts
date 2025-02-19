@@ -15,6 +15,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private socket!: WebSocket;
   message: string = '';
+  currentResponse: string = '';
   messages: string[] = [];
 
   constructor(private httpClient: HttpClient) {
@@ -36,7 +37,13 @@ export class AppComponent implements OnInit, OnDestroy {
     };
 
     this.socket.onmessage = (event) => {
-      this.messages.push(event.data);
+      if (event.data.includes('<complete-response>')) {
+
+        console.log(event.data.substring(19, event.data.length - 20))
+        // this.messages.push()
+      } else {
+        this.messages.push(event.data);
+      }
     };
 
     this.socket.onerror = (error) => {
