@@ -1,11 +1,11 @@
 <button (click)="getUsers()">Hämta användare</button>
 <button (click)="addUser()">Lägg till användare</button>
-
 <div>
   <input [(ngModel)]="message" placeholder="Skriv ett meddelande..." />
   <button (click)="send()">Skicka</button>
-  <ul>
-    <li *ngFor="let msg of messages">{{ msg }}</li>
-  </ul>
+  @for (msg of messages; track msg) {
+    <div [innerHTML]="getMarkdownMessage(msg)"></div>
+  }
 </div>
+<div [innerHTML]="getMarkdownMessage(currentResponse)"></div>
 <router-outlet />

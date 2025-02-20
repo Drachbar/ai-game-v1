@@ -2,11 +2,11 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
 import {FormsModule} from '@angular/forms';
-import {NgForOf} from '@angular/common';
+import {marked} from 'marked';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, FormsModule, NgForOf],
+  imports: [RouterOutlet, FormsModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -39,10 +39,11 @@ export class AppComponent implements OnInit, OnDestroy {
     this.socket.onmessage = (event) => {
       if (event.data.includes('<complete-response>')) {
 
-        console.log(event.data.substring(19, event.data.length - 20))
-        // this.messages.push()
+        const message = event.data.substring(19, event.data.length - 20);
+        this.messages.push(message);
+        this.currentResponse = '';
       } else {
-        this.messages.push(event.data);
+        this.currentResponse += event.data;
       }
     };
 
@@ -75,4 +76,7 @@ export class AppComponent implements OnInit, OnDestroy {
       })
   }
 
+  getMarkdownMessage(msg: string) {
+    return marked(msg).toString();
+  }
 }
