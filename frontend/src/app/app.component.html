@@ -1,7 +1,7 @@
 <button (click)="getUsers()">Hämta användare</button>
 <button (click)="addUser()">Lägg till användare</button>
 <div>
-  <input [(ngModel)]="message" placeholder="Skriv ett meddelande..." />
+  <textarea [(ngModel)]="message" placeholder="Skriv ett meddelande..." rows="5" cols="80"></textarea>
   <button (click)="send()">Skicka</button>
   @for (msg of messages; track msg) {
     <div [innerHTML]="getMarkdownMessage(msg)"></div>

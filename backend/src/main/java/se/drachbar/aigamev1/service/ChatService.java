@@ -23,7 +23,6 @@ public class ChatService {
 
     public ChatService(ApiKeyConfig apiKeyConfig) {
         String apiKey = apiKeyConfig.getApiKey();
-        System.out.println(apiKeyConfig.getApiKey());
         this.model = OpenAiStreamingChatModel.builder()
                 .apiKey(apiKey)
                 .modelName(OpenAiChatModelName.GPT_4_O_MINI)
