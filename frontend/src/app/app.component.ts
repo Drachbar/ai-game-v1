@@ -2,11 +2,11 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
 import {FormsModule} from '@angular/forms';
-import {NgForOf} from '@angular/common';
+import {marked} from 'marked';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, FormsModule, NgForOf],
+  imports: [RouterOutlet, FormsModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -15,6 +15,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private socket!: WebSocket;
   message: string = '';
+  currentResponse: string = '';
   messages: string[] = [];
 
   constructor(private httpClient: HttpClient) {
@@ -36,7 +37,14 @@ export class AppComponent implements OnInit, OnDestroy {
     };
 
     this.socket.onmessage = (event) => {
-      this.messages.push(event.data);
+      if (event.data.includes('<complete-response>')) {
+
+        const message = event.data.substring(19, event.data.length - 20);
+        this.messages.push(message);
+        this.currentResponse = '';
+      } else {
+        this.currentResponse += event.data;
+      }
     };
 
     this.socket.onerror = (error) => {
@@ -68,4 +76,7 @@ export class AppComponent implements OnInit, OnDestroy {
       })
   }
 
+  getMarkdownMessage(msg: string) {
+    return marked(msg).toString();
+  }
 }

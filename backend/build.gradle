@@ -24,6 +24,8 @@ repositories {
 }
 
 dependencies {
+    implementation 'dev.langchain4j:langchain4j-open-ai:1.0.0-alpha1'
+    implementation 'dev.langchain4j:langchain4j:1.0.0-alpha1'
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
