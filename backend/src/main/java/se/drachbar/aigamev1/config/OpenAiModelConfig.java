@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Configuration;
 public class OpenAiModelConfig {
     private final ApiKeyConfig properties;
 
-
     private OpenAiStreamingChatModel createStreamingModel(OpenAiChatModelName modelName) {
         return OpenAiStreamingChatModel.builder()
                 .apiKey(properties.getApiKey())
