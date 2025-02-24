@@ -1,5 +1,6 @@
 package se.drachbar.aigamev1.service;
 
+import dev.langchain4j.data.message.AiMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.socket.WebSocketSession;
@@ -42,7 +43,16 @@ public class GameService {
         }
 
         return gameStoryAgent.processQuery(state.getStoryHistory(), playerChoice, state.getCurrentRound(), session)
-                .map(updatedStory -> {
+                .map(newMessages -> {
+                    newMessages.forEach(state::addToHistory);
+
+                    String updatedStory = newMessages.stream()
+                            .filter(AiMessage.class::isInstance)
+                            .map(AiMessage.class::cast)
+                            .reduce((_, second) -> second)
+                            .map(AiMessage::text)
+                            .orElseThrow(() -> new IllegalStateException("Inget AiMessage hittades"));
+
                     String[] newChoices = choiceAgent.generateChoices(state.getStoryHistory(), playerId);
                     GameState.PlayerStatus playerStatus = state.getPlayerStatuses().get(playerId);
 

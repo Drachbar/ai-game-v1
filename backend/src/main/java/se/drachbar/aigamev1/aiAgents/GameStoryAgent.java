@@ -12,6 +12,7 @@ import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Mono;
 import se.drachbar.aigamev1.chat.GameStreamingResponseHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,32 +21,35 @@ import java.util.Map;
 public class GameStoryAgent {
     private final Map<String, OpenAiStreamingChatModel> streamingModels; // Injicera en Map av alla streaming-modeller
 
-    public Mono<String> processQuery(List<ChatMessage> history, String query, int round, String modelName, WebSocketSession session) {
+    public Mono<List<ChatMessage>> processQuery(List<ChatMessage> history, String query, int round, String modelName, WebSocketSession session) {
         OpenAiStreamingChatModel model = streamingModels.getOrDefault(modelName, streamingModels.get("gpt4oMiniStreamingModel"));
-        List<ChatMessage> messages = List.of(
-                new SystemMessage("""
-                        Du är en kreativ berättare som fortsätter en pågående historia för ett onlinespel.
-                        Fortsätt historien baserat på spelarnas val. Historien ska pågå i cirka 10 rundor.
-                        Du får in information om vilken runda spelet är på (just nu runda %d), så försök att ha klimax nära slutet av historien.
-                        Spelarna kommer få göra olika val, om någon spelare gör något uppenbart dumt så kan den
-                        spelaren få dö/förlora tidigt i spelet. Du avgör om spelarens val lyckas eller inte.
-                        När en spelare förlorar eller dör inkludera orden "du dör" eller "du förlorar" i historien.
-                        När historien når sitt naturliga slut, inkludera '[GAME OVER]' i svaret.
-                        """.formatted(round)),
-                new UserMessage(query)
-        );
+        List<ChatMessage> messages = new ArrayList<>();
+
+        messages.add(new SystemMessage("""
+                Du är en kreativ berättare som fortsätter en pågående historia för ett onlinespel.
+                Fortsätt historien baserat på spelarnas val. Historien ska pågå i cirka 10 rundor.
+                Du får in information om vilken runda spelet är på (just nu runda %d), så försök att ha klimax nära slutet av historien.
+                Spelarna kommer få göra olika val, om någon spelare gör något uppenbart dumt så kan den
+                spelaren få dö/förlora tidigt i spelet. Du avgör om spelarens val lyckas eller inte.
+                När en spelare förlorar eller dör inkludera orden "du dör" eller "du förlorar" i historien.
+                När historien når sitt naturliga slut, inkludera '[GAME OVER]' i svaret.
+                """.formatted(round)));
+        messages.addAll(history);
+        messages.add(new UserMessage(query));
+
 
         GameStreamingResponseHandler responseHandler = new GameStreamingResponseHandler(session);
         model.chat(ChatRequest.builder().messages(messages).build(), responseHandler);
         return responseHandler.getResponse()
                 .map(response -> {
-                    history.add(new UserMessage(query)); // Lägg till spelarens val i historien
-                    history.add(new AiMessage(response)); // Lägg till AI:ns svar i historien
-                    return response;
+                    List<ChatMessage> newMessages = new ArrayList<>();
+                    newMessages.add(new UserMessage(query));  // Spelarens val
+                    newMessages.add(new AiMessage(response)); // AI:ns svar
+                    return newMessages;
                 });
     }
 
-    public Mono<String> processQuery(List<ChatMessage> history, String query, int round, WebSocketSession session) {
+    public Mono<List<ChatMessage>> processQuery(List<ChatMessage> history, String query, int round, WebSocketSession session) {
         return processQuery(history, query, round, "gpt4oMiniStreamingModel", session); // Default till gpt-4o-mini
     }
 }
