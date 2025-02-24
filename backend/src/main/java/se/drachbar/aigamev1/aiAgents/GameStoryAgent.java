@@ -29,6 +29,7 @@ public class GameStoryAgent {
                         Du får in information om vilken runda spelet är på (just nu runda %d), så försök att ha klimax nära slutet av historien.
                         Spelarna kommer få göra olika val, om någon spelare gör något uppenbart dumt så kan den
                         spelaren få dö/förlora tidigt i spelet. Du avgör om spelarens val lyckas eller inte.
+                        När en spelare förlorar eller dör inkludera orden "du dör" eller "du förlorar" i historien.
                         När historien når sitt naturliga slut, inkludera '[GAME OVER]' i svaret.
                         """.formatted(round)),
                 new UserMessage(query)
@@ -45,6 +46,6 @@ public class GameStoryAgent {
     }
 
     public Mono<String> processQuery(List<ChatMessage> history, String query, int round, WebSocketSession session) {
-        return processQuery(history, query, 1, "gpt4oMiniStreamingModel", session); // Default till gpt-4o-mini
+        return processQuery(history, query, round, "gpt4oMiniStreamingModel", session); // Default till gpt-4o-mini
     }
 }

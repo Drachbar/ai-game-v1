@@ -27,10 +27,10 @@ public class StartGameStoryAgent {
                 new SystemMessage("""
                         Du är en kreativ berättare som startar en ny historia för ett onlinespel.
                         Skapa en engagerande introduktion baserat på följande tema: '%s'.
-                        Historien ska inkludera följande spelare: %s.
+                        Historien ska inkludera följande %d spelare: %s.
                         Historien ska pågå i cirka 10 rundor, med ett klimax nära slutet.
                         Ge en tydlig startpunkt där spelarna kan börja göra val.
-                        """.formatted(theme, playerList))
+                        """.formatted(theme, playerIds.size(), playerList))
         );
 
         GameStreamingResponseHandler responseHandler = new GameStreamingResponseHandler(session);

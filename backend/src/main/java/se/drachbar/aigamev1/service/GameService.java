@@ -28,7 +28,7 @@ public class GameService {
 
         return startGameStoryAgent.startStory(state.getStoryHistory(), playerIds, theme, session)
                 .map(initialStory -> {
-                    String[] choices = choiceAgent.generateChoices(state.getStoryHistory());
+                    String[] choices = choiceAgent.generateChoices(state.getStoryHistory(), playerIds.getFirst());
                     state.setCurrentChoices(choices);
                     playerIds.forEach(playerId -> state.getPlayerStatuses().get(playerId).addOfferedChoices(choices));
                     return state;
@@ -43,7 +43,7 @@ public class GameService {
 
         return gameStoryAgent.processQuery(state.getStoryHistory(), playerChoice, state.getCurrentRound(), session)
                 .map(updatedStory -> {
-                    String[] newChoices = choiceAgent.generateChoices(state.getStoryHistory());
+                    String[] newChoices = choiceAgent.generateChoices(state.getStoryHistory(), playerId);
                     GameState.PlayerStatus playerStatus = state.getPlayerStatuses().get(playerId);
 
                     playerStatus.addChoiceMade(playerChoice);
