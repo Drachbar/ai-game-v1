@@ -32,6 +32,8 @@ public class ChoiceAgent {
                 """.formatted(currentPlayer)));
         String response = gpt4oMiniModel.generate(messages).content().text();
         try {
+            System.out.println("Val agent");
+            System.out.println(response);
             return parseChoices(response);
         } catch (Exception e) {
             return new String[0];

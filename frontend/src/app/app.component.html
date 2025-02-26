@@ -1,11 +1,14 @@
 <button (click)="getUsers()">Hämta användare</button>
 <button (click)="addUser()">Lägg till användare</button>
-<div>
-  <textarea [(ngModel)]="message" placeholder="Skriv ett meddelande..." rows="5" cols="80"></textarea>
-  <button (click)="send()">Skicka</button>
-  @for (msg of messages; track msg) {
-    <div [innerHTML]="getMarkdownMessage(msg)"></div>
-  }
-</div>
+<button (click)="test1()">visa messages</button>
+<button (click)="test2()">visa nuvarande meddelande</button>
+@for (msg of messages; track msg) {
+  <div [innerHTML]="getMarkdownMessage(msg)"></div>
+}
 <div [innerHTML]="getMarkdownMessage(currentResponse)"></div>
+@for (choice of choices; track choice) {
+  <button (click)="makeChoice(choice)">{{choice}}</button>
+}
+<textarea [(ngModel)]="message" placeholder="Skriv ett meddelande..." rows="5" cols="80"></textarea>
+<button (click)="send()">Skicka</button>
 <router-outlet />

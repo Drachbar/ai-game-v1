@@ -17,6 +17,7 @@ export class AppComponent implements OnInit, OnDestroy {
   message: string = '';
   currentResponse: string = '';
   messages: string[] = [];
+  choices: string[] = [];
 
   constructor(private httpClient: HttpClient) {
   }
@@ -37,9 +38,20 @@ export class AppComponent implements OnInit, OnDestroy {
     };
 
     this.socket.onmessage = (event) => {
-      if (event.data.includes('<complete-response>')) {
+      const wholeMessage = event.data;
 
+      const match: string = wholeMessage.match(/<choices>(.*?)<\/choices>/);
+
+      if (match && match[1]) {
+        this.choices = match[1].split(",").map(item => item.trim());
+      }
+
+      if (wholeMessage.includes('<complete-response>')) {
         const message = event.data.substring(19, event.data.length - 20);
+
+        console.log('complete response')
+        console.log(message)
+
         this.messages.push(message);
         this.currentResponse = '';
       } else {
@@ -60,6 +72,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.message.trim()) {
       this.socket.send(this.message);
       this.message = '';
+      this.choices = [];
     }
   }
 
@@ -78,5 +91,18 @@ export class AppComponent implements OnInit, OnDestroy {
 
   getMarkdownMessage(msg: string) {
     return marked(msg).toString();
+  }
+
+  makeChoice(choice: string) {
+    this.socket.send('choice:' + choice);
+    this.choices = [];
+  }
+
+  test1() {
+    console.log(this.messages)
+  }
+
+  test2() {
+    console.log(this.currentResponse)
   }
 }

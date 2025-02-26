@@ -36,21 +36,19 @@ public class MyWebSocketHandler implements WebSocketHandler {
             String command = parts[0].trim();
             String payload = parts.length > 1 ? parts[1].trim() : "";
 
-            switch (command.toLowerCase()) {
-                case "start":
+            return switch (command.toLowerCase()) {
+                case "start" -> {
                     // Starta ett nytt spel med ett tema och en spelare för test
-                    List<String> playerIds = List.of("player1"); // Testspelare
-                    return gameService.startGame(sessionId, playerIds, payload, session)
-                            .flatMap(gameState -> sendGameState(session, gameState));
-
-                case "choice":
+                    List<String> playerIds = List.of("Mattias"); // Testspelare
+                    yield gameService.startGame(sessionId, playerIds, payload, session)
+                            .flatMap(gameState -> sendGameState(session, gameState)); // Testspelare
+                }
+                case "choice" ->
                     // Hantera ett val från spelaren
-                    return gameService.nextTurn(sessionId, "player1", payload, session)
-                            .flatMap(gameState -> sendGameState(session, gameState));
-
-                default:
-                    return session.send(Mono.just(session.textMessage("Okänt kommando: " + command)));
-            }
+                        gameService.nextTurn(sessionId, "Mattias", payload, session)
+                                .flatMap(gameState -> sendGameState(session, gameState));
+                default -> session.send(Mono.just(session.textMessage("Okänt kommando: " + command)));
+            };
         } catch (Exception e) {
             return session.send(Mono.just(session.textMessage("Fel: " + e.getMessage())));
         }
@@ -67,7 +65,7 @@ public class MyWebSocketHandler implements WebSocketHandler {
                 .reduce((first, second) -> second) // Ta det sista AI-meddelandet
                 .ifPresent(msg -> response.append("Historia: ").append(msg.text()).append("\n"));
 
-        response.append("Val: ").append(String.join(", ", gameState.getCurrentChoices())).append("\n");
+        response.append("<choices>").append(String.join(",", gameState.getCurrentChoices())).append("</choices>").append("\n");
         response.append("Spel slut: ").append(gameState.isGameOver()).append("\n");
 
         return session.send(Mono.just(session.textMessage(response.toString())));

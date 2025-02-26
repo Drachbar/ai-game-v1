@@ -28,8 +28,8 @@ public class StartGameStoryAgent {
                         Du är en kreativ berättare som startar en ny historia för ett onlinespel.
                         Skapa en engagerande introduktion baserat på följande tema: '%s'.
                         Historien ska inkludera följande %d spelare: %s.
-                        Historien ska pågå i cirka 10 rundor, med ett klimax nära slutet.
-                        Ge en tydlig startpunkt där spelarna kan börja göra val.
+                        Historien kommer pågå i cirka 10 rundor, med ett klimax nära slutet.
+                        Ge en tydlig startpunkt där spelarna kan börja göra val. Ge ett tydligt mål vad spelet ska gå ut på.
                         """.formatted(theme, playerIds.size(), playerList))
         );
 
@@ -37,6 +37,8 @@ public class StartGameStoryAgent {
         model.chat(ChatRequest.builder().messages(messages).build(), responseHandler);
         return responseHandler.getResponse()
                 .map(response -> {
+                    System.out.println("I StartGameStory");
+                    System.out.println(response);
                     history.add(new AiMessage(response)); // Lägg till introduktionen i historien
                     return response;
                 });
