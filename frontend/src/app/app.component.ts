@@ -43,7 +43,12 @@ export class AppComponent implements OnInit, OnDestroy {
       const match: string = wholeMessage.match(/<choices>(.*?)<\/choices>/);
 
       if (match && match[1]) {
-        this.choices = match[1].split(",").map(item => item.trim());
+        try {
+          this.choices = JSON.parse(match[1]);
+        } catch (error) {
+          console.error("Kunde inte parsea JSON choices:", error);
+          this.choices = [];
+        }
       }
 
       if (wholeMessage.includes('<complete-response>')) {

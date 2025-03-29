@@ -43,8 +43,6 @@ public class StartGameStoryAgent {
         model.chat(ChatRequest.builder().messages(messages).build(), responseHandler);
         return responseHandler.getResponse()
                 .map(response -> {
-                    System.out.println("I StartGameStory");
-                    System.out.println(response);
                     history.add(new AiMessage(response)); // Lägg till introduktionen i historien
                     return response;
                 });

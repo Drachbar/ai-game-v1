@@ -39,7 +39,7 @@ public class GameService {
     }
 
     public Mono<GameState> nextTurn(String sessionId, String playerId, String playerChoice, WebSocketSession session) {
-        GameState state = gameSessions.get(sessionId);
+        final GameState state = gameSessions.get(sessionId);
         if (state == null || !state.isPlayerAlive(playerId) || state.isGameOver()) {
             return Mono.just(state);
         }
@@ -48,26 +48,15 @@ public class GameService {
                 .map(newMessages -> {
                     newMessages.forEach(state::addToHistory);
 
-                    String updatedStory = newMessages.stream()
+                    GameState.PlayerStatus playerStatus = state.getPlayerStatuses().get(playerId);
+                    playerStatus.addChoiceMade(playerChoice);
+
+                    final String updatedStory = newMessages.stream()
                             .filter(AiMessage.class::isInstance)
                             .map(AiMessage.class::cast)
                             .reduce((_, second) -> second)
                             .map(AiMessage::text)
                             .orElseThrow(() -> new IllegalStateException("Inget AiMessage hittades"));
-
-                    String[] newChoices = choiceAgent.generateChoices(state.getStoryHistory(), playerId);
-                    System.out.println("Loopa igenom start");
-                    for (String choice : newChoices) {
-                        System.out.println(choice);
-                    }
-                    System.out.println("Loopa igenom slut");
-                    GameState.PlayerStatus playerStatus = state.getPlayerStatuses().get(playerId);
-
-                    playerStatus.addChoiceMade(playerChoice);
-                    playerStatus.addOfferedChoices(newChoices);
-
-                    state.setCurrentChoices(newChoices);
-                    state.setCurrentRound(state.getCurrentRound() + 1);
 
                     if (updatedStory.contains("du dör") || updatedStory.contains("du förlorar")) {
                         state.killPlayer(playerId);
@@ -75,13 +64,20 @@ public class GameService {
                     if (updatedStory.contains("[GAME OVER]") || updatedStory.contains("historien når sitt slut")) {
                         state.setGameOver(true);
                     }
-
                     state.checkGameOver();
+
+                    if (state.isGameOver()) {
+                        return state;
+                    }
+
+                    final String[] newChoices = choiceAgent.generateChoices(state.getStoryHistory(), playerId);
+
+                    playerStatus.addOfferedChoices(newChoices);
+
+                    state.setCurrentChoices(newChoices);
+                    state.setCurrentRound(state.getCurrentRound() + 1);
+
                     return state;
                 });
-    }
-
-    public GameState getGameState(String sessionId) {
-        return gameSessions.get(sessionId);
     }
 }

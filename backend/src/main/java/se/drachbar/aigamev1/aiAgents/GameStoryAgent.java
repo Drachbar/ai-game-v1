@@ -46,8 +46,6 @@ public class GameStoryAgent {
         model.chat(ChatRequest.builder().messages(messages).build(), responseHandler);
         return responseHandler.getResponse()
                 .map(response -> {
-                    System.out.println("I gamestoryagent");
-                    System.out.println(response);
                     List<ChatMessage> newMessages = new ArrayList<>();
                     newMessages.add(new UserMessage(query));  // Spelarens val
                     newMessages.add(new AiMessage(response)); // AI:ns svar

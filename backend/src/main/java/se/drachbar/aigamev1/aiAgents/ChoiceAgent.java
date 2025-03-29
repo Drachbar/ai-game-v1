@@ -35,9 +35,10 @@ public class ChoiceAgent {
                 Nuvarande spelare är: %s
                 """.formatted(currentPlayer)));
         final String response = gpt4oMiniModel.generate(messages).content().text();
+        log.info(response);
         final String[] choices = parseChoices(response);
-        if (choices.length == 0) {
-            log.error("Inga val fanns");
+        if (choices.length != 4) {
+            log.error("Ej 4 val: {}", List.of(choices));
         }
         return choices;
     }
@@ -45,7 +46,7 @@ public class ChoiceAgent {
     private String[] parseChoices(String response) {
         final ObjectMapper objectMapper = new ObjectMapper();
         try {
-            return objectMapper.readValue(trimMarkdown(response), String[].class);
+            return objectMapper.readValue(cleanMarkdown(response), String[].class);
         } catch (IOException e) {
             log.error(e.getMessage());
             log.error("Det gick inte att parsea meddelandet: {}", response);
@@ -53,14 +54,12 @@ public class ChoiceAgent {
         }
     }
 
-    private String trimMarkdown(String input) {
-        int start = input.indexOf('[');
-        int end = input.lastIndexOf(']');
-
-        if (start == -1 || end == -1 || end <= start) {
-            return "";
-        }
-
-        return input.substring(start, end + 1);
+    private String cleanMarkdown(String input) {
+        // Ta bort markdown-kodblock ```json ... ```
+        return input
+                .replaceAll("(?s)^```json\\s*", "") // tar bort ```json i början
+                .replaceAll("(?s)^```\\s*", "")     // eller bara ```
+                .replaceAll("(?s)\\s*```$", "")     // och avslutande ```
+                .trim();
     }
 }

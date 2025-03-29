@@ -1,6 +1,8 @@
 package se.drachbar.aigamev1.websocket;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.langchain4j.data.message.AiMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.WebSocketSession;
@@ -11,8 +13,12 @@ import se.drachbar.aigamev1.service.GameService;
 
 import java.util.List;
 
+@Slf4j
 public class MyWebSocketHandler implements WebSocketHandler {
+
     private final GameService gameService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public MyWebSocketHandler(GameService gameService) {
         this.gameService = gameService;
@@ -62,10 +68,17 @@ public class MyWebSocketHandler implements WebSocketHandler {
         gameState.getStoryHistory().stream()
                 .filter(AiMessage.class::isInstance)
                 .map(AiMessage.class::cast)
-                .reduce((first, second) -> second) // Ta det sista AI-meddelandet
+                .reduce((_, second) -> second) // Ta det sista AI-meddelandet
                 .ifPresent(msg -> response.append("Historia: ").append(msg.text()).append("\n"));
 
-        response.append("<choices>").append(String.join(",", gameState.getCurrentChoices())).append("</choices>").append("\n");
+        try {
+            String choicesJson = objectMapper.writeValueAsString(gameState.getCurrentChoices());
+            response.append("<choices>").append(choicesJson).append("</choices>\n");
+        } catch (Exception e) {
+            log.error("Kunde inte generera JSON för choices", e);
+            response.append("<choices>[]</choices>\n");
+        }
+
         response.append("Spel slut: ").append(gameState.isGameOver()).append("\n");
 
         return session.send(Mono.just(session.textMessage(response.toString())));
