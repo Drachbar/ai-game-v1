@@ -29,17 +29,17 @@ public class MyWebSocketHandler implements WebSocketHandler {
     }
 
     private Mono<Void> processGameMessage(WebSocketSession session, String message) {
-        String sessionId = session.getId(); // Använd WebSocket-sessionens ID som spel-session-ID
+        final String sessionId = session.getId(); // Använd WebSocket-sessionens ID som spel-session-ID
         try {
             // Antag att meddelandet är i formatet "command:payload", t.ex. "start:theme" eller "choice:valet"
-            String[] parts = message.split(":", 2);
-            String command = parts[0].trim();
-            String payload = parts.length > 1 ? parts[1].trim() : "";
+            final String[] parts = message.split(":", 2);
+            final String command = parts[0].trim();
+            final String payload = parts.length > 1 ? parts[1].trim() : "";
 
             return switch (command.toLowerCase()) {
                 case "start" -> {
                     // Starta ett nytt spel med ett tema och en spelare för test
-                    List<String> playerIds = List.of("Mattias"); // Testspelare
+                    final List<String> playerIds = List.of("Mattias"); // Testspelare
                     yield gameService.startGame(sessionId, playerIds, payload, session)
                             .flatMap(gameState -> sendGameState(session, gameState)); // Testspelare
                 }
@@ -55,7 +55,7 @@ public class MyWebSocketHandler implements WebSocketHandler {
     }
 
     private Mono<Void> sendGameState(WebSocketSession session, GameState gameState) {
-        StringBuilder response = new StringBuilder();
+        final StringBuilder response = new StringBuilder();
         response.append("Runda: ").append(gameState.getCurrentRound()).append("\n");
 
         // Lägg till senaste historien (AI-svaret)

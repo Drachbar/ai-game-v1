@@ -2,6 +2,7 @@ package se.drachbar.aigamev1.service;
 
 import dev.langchain4j.data.message.AiMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Mono;
@@ -16,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GameService {
     private final StartGameStoryAgent startGameStoryAgent;
     private final GameStoryAgent gameStoryAgent;
@@ -29,7 +31,7 @@ public class GameService {
 
         return startGameStoryAgent.startStory(state.getStoryHistory(), playerIds, theme, session)
                 .map(initialStory -> {
-                    String[] choices = choiceAgent.generateChoices(state.getStoryHistory(), playerIds.getFirst());
+                    final String[] choices = choiceAgent.generateChoices(state.getStoryHistory(), playerIds.getFirst());
                     state.setCurrentChoices(choices);
                     playerIds.forEach(playerId -> state.getPlayerStatuses().get(playerId).addOfferedChoices(choices));
                     return state;
@@ -54,6 +56,11 @@ public class GameService {
                             .orElseThrow(() -> new IllegalStateException("Inget AiMessage hittades"));
 
                     String[] newChoices = choiceAgent.generateChoices(state.getStoryHistory(), playerId);
+                    System.out.println("Loopa igenom start");
+                    for (String choice : newChoices) {
+                        System.out.println(choice);
+                    }
+                    System.out.println("Loopa igenom slut");
                     GameState.PlayerStatus playerStatus = state.getPlayerStatuses().get(playerId);
 
                     playerStatus.addChoiceMade(playerChoice);

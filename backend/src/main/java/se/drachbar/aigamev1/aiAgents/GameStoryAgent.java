@@ -24,7 +24,12 @@ public class GameStoryAgent {
     public Mono<List<ChatMessage>> processQuery(List<ChatMessage> history, String query, int round, String modelName, WebSocketSession session) {
         OpenAiStreamingChatModel model = streamingModels.getOrDefault(modelName, streamingModels.get("gpt4oMiniStreamingModel"));
         List<ChatMessage> messages = new ArrayList<>();
-
+        messages.add(new SystemMessage("""
+                    DU FÅR ABSOLUT INTE skriva några val, alternativ eller frågor till spelarna.
+                    Ditt enda uppdrag är att fortsätta berättelsen i fri text, som en novell.
+                    Du får INTE skriva fraser som "Vad vill du göra nu?" eller lista val som "1.", "2.", etc.
+                    Det är en annan AI-agent som sköter valen. Om du bryter mot detta så förstörs spelets logik.
+                """));
         messages.add(new SystemMessage("""
                 Du är en kreativ berättare som fortsätter en pågående historia för ett onlinespel.
                 Fortsätt historien baserat på spelarnas val. Historien ska pågå i cirka 10 rundor.
@@ -36,7 +41,6 @@ public class GameStoryAgent {
                 """.formatted(round)));
         messages.addAll(history);
         messages.add(new UserMessage(query));
-
 
         GameStreamingResponseHandler responseHandler = new GameStreamingResponseHandler(session);
         model.chat(ChatRequest.builder().messages(messages).build(), responseHandler);

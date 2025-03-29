@@ -25,6 +25,12 @@ public class StartGameStoryAgent {
         String playerList = String.join(", ", playerIds); // Konvertera till kommaseparerad sträng
         List<ChatMessage> messages = List.of(
                 new SystemMessage("""
+                    DU FÅR ABSOLUT INTE skriva några val, alternativ eller frågor till spelarna.
+                    Ditt enda uppdrag är att starta berättelsen i fri text, som en novell.
+                    Du får INTE skriva fraser som "Vad vill du göra nu?" eller lista val som "1.", "2.", etc.
+                    Det är en annan AI-agent som sköter valen. Om du bryter mot detta så förstörs spelets logik.
+                """),
+                new SystemMessage("""
                         Du är en kreativ berättare som startar en ny historia för ett onlinespel.
                         Skapa en engagerande introduktion baserat på följande tema: '%s'.
                         Historien ska inkludera följande %d spelare: %s.
