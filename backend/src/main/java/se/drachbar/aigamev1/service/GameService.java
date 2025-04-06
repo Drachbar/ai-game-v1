@@ -1,6 +1,7 @@
 package se.drachbar.aigamev1.service;
 
 import dev.langchain4j.data.message.AiMessage;
+import dev.langchain4j.data.message.ChatMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,7 @@ import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Mono;
 import se.drachbar.aigamev1.aiAgents.ChoiceAgent;
 import se.drachbar.aigamev1.aiAgents.GameStoryAgent;
+import se.drachbar.aigamev1.aiAgents.GameStoryFinishAgent;
 import se.drachbar.aigamev1.aiAgents.StartGameStoryAgent;
 import se.drachbar.aigamev1.model.GameState;
 
@@ -21,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameService {
     private final StartGameStoryAgent startGameStoryAgent;
     private final GameStoryAgent gameStoryAgent;
+    private final GameStoryFinishAgent gameStoryFinishAgent;
     private final ChoiceAgent choiceAgent;
     private final Map<String, GameState> gameSessions = new ConcurrentHashMap<>();
 
@@ -44,40 +47,51 @@ public class GameService {
             return Mono.just(state);
         }
 
-        return gameStoryAgent.processQuery(state.getStoryHistory(), playerChoice, state.getCurrentRound(), session)
-                .map(newMessages -> {
-                    newMessages.forEach(state::addToHistory);
+        if (state.getCurrentRound() < 5) {
+            return gameStoryAgent.processQuery(state.getStoryHistory(), playerChoice, state.getCurrentRound(), session)
+                    .map(messages -> handleStoryResponse(state, playerId, playerChoice, messages, true));
+        } else {
+            return gameStoryFinishAgent.processQuery(state.getStoryHistory(), playerChoice, session)
+                    .map(messages -> handleStoryResponse(state, playerId, playerChoice, messages, false));
+        }
+    }
 
-                    GameState.PlayerStatus playerStatus = state.getPlayerStatuses().get(playerId);
-                    playerStatus.addChoiceMade(playerChoice);
+    private GameState handleStoryResponse(GameState state, String playerId, String playerChoice, List<ChatMessage> messages, boolean generateChoices) {
+        messages.forEach(state::addToHistory);
 
-                    final String updatedStory = newMessages.stream()
-                            .filter(AiMessage.class::isInstance)
-                            .map(AiMessage.class::cast)
-                            .reduce((_, second) -> second)
-                            .map(AiMessage::text)
-                            .orElseThrow(() -> new IllegalStateException("Inget AiMessage hittades"));
+        GameState.PlayerStatus playerStatus = state.getPlayerStatuses().get(playerId);
+        playerStatus.addChoiceMade(playerChoice);
 
-                    if (updatedStory.contains("du dör") || updatedStory.contains("du förlorar")) {
-                        state.killPlayer(playerId);
-                    }
-                    if (updatedStory.contains("[GAME OVER]") || updatedStory.contains("historien når sitt slut")) {
-                        state.setGameOver(true);
-                    }
-                    state.checkGameOver();
+        final String updatedStory = messages.stream()
+                .filter(AiMessage.class::isInstance)
+                .map(AiMessage.class::cast)
+                .reduce((_, second) -> second)
+                .map(AiMessage::text)
+                .orElseThrow(() -> new IllegalStateException("Inget AiMessage hittades"));
 
-                    if (state.isGameOver()) {
-                        return state;
-                    }
+        if (updatedStory.contains("du dör") || updatedStory.contains("du förlorar")) {
+            state.killPlayer(playerId);
+        }
 
-                    final String[] newChoices = choiceAgent.generateChoices(state.getStoryHistory(), playerId);
+        if (updatedStory.contains("[GAME OVER]") || updatedStory.contains("historien når sitt slut")) {
+            state.setGameOver(true);
+        }
 
-                    playerStatus.addOfferedChoices(newChoices);
+        state.checkGameOver();
 
-                    state.setCurrentChoices(newChoices);
-                    state.setCurrentRound(state.getCurrentRound() + 1);
+        if (state.isGameOver()) {
+            return state;
+        }
 
-                    return state;
-                });
+        if (generateChoices) {
+            final String[] newChoices = choiceAgent.generateChoices(state.getStoryHistory(), playerId);
+            playerStatus.addOfferedChoices(newChoices);
+            state.setCurrentChoices(newChoices);
+            state.setCurrentRound(state.getCurrentRound() + 1);
+        } else {
+            state.setGameOver(true);
+        }
+
+        return state;
     }
 }

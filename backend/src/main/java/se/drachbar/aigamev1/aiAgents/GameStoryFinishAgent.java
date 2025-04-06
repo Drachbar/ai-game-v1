@@ -18,26 +18,21 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class GameStoryAgent {
+public class GameStoryFinishAgent {
     private final Map<String, OpenAiStreamingChatModel> streamingModels; // Injicera en Map av alla streaming-modeller
 
-    public Mono<List<ChatMessage>> processQuery(List<ChatMessage> history, String query, int round, String modelName, WebSocketSession session) {
+    public Mono<List<ChatMessage>> processQuery(List<ChatMessage> history, String query, String modelName, WebSocketSession session) {
         OpenAiStreamingChatModel model = streamingModels.getOrDefault(modelName, streamingModels.get("gpt4oMiniStreamingModel"));
         List<ChatMessage> messages = new ArrayList<>();
         messages.add(new SystemMessage("""
-                DU FÅR ABSOLUT INTE skriva några val, alternativ eller frågor till spelarna.
-                Ditt enda uppdrag är att fortsätta berättelsen i fri text, som en novell.
-                Du får INTE skriva fraser som "Vad vill du göra nu?" eller lista val som "1.", "2.", etc.
-                Det är en annan AI-agent som sköter valen. Om du bryter mot detta så förstörs spelets logik.
-                """));
-        messages.add(new SystemMessage("""
                 Du är en kreativ berättare som fortsätter en pågående historia för ett onlinespel.
-                Fortsätt historien baserat på spelarnas val. Historien ska pågå i cirka 10 rundor.
-                Du får in information om vilken runda spelet är på (just nu runda %d), så försök att ha klimax nära slutet av historien.
-                Spelarna kommer få göra olika val där valen skrivs av en annan ai-agent, om någon spelare gör något uppenbart dumt så kan den
-                spelaren få dö/förlora tidigt i spelet. Du avgör om spelarens val lyckas eller inte.
-                När en spelare förlorar eller dör inkludera orden "du dör" eller "du förlorar" i historien. Denna text som du skriver ska vara ungefär 150 ord.
-                """.formatted(round)));
+                Fortsätt historien baserat på spelarnas val. Denna text som du skriver nu ska vara runt 500 ord.
+                Detta är den sista berättelsen, så se till att avsluta historien på ett episkt sätt.
+                Spelarna har fått göra olika val där valen skrivs av en annan ai-agent,
+                om någon spelare gör något uppenbart dumt så kan den spelaren få dö/förlora tidigt i spelet.
+                Du avgör om spelarens val lyckas eller inte. När en spelare förlorar eller dör inkludera orden
+                "du dör" eller "du förlorar" i historien. Avsluta med att tydligt skriva för spelarna om de vann eller förlorade.
+                """));
         messages.addAll(history);
         messages.add(new UserMessage(query));
 
@@ -52,7 +47,7 @@ public class GameStoryAgent {
                 });
     }
 
-    public Mono<List<ChatMessage>> processQuery(List<ChatMessage> history, String query, int round, WebSocketSession session) {
-        return processQuery(history, query, round, "gpt4oMiniStreamingModel", session); // Default till gpt-4o-mini
+    public Mono<List<ChatMessage>> processQuery(List<ChatMessage> history, String query, WebSocketSession session) {
+        return processQuery(history, query, "gpt4oMiniStreamingModel", session); // Default till gpt-4o-mini
     }
 }
