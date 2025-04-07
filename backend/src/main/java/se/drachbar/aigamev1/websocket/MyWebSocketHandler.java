@@ -1,7 +1,6 @@
 package se.drachbar.aigamev1.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.langchain4j.data.message.AiMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
@@ -62,14 +61,6 @@ public class MyWebSocketHandler implements WebSocketHandler {
 
     private Mono<Void> sendGameState(WebSocketSession session, GameState gameState) {
         final StringBuilder response = new StringBuilder();
-        response.append("Runda: ").append(gameState.getCurrentRound()).append("\n");
-
-        // Lägg till senaste historien (AI-svaret)
-        gameState.getStoryHistory().stream()
-                .filter(AiMessage.class::isInstance)
-                .map(AiMessage.class::cast)
-                .reduce((_, second) -> second) // Ta det sista AI-meddelandet
-                .ifPresent(msg -> response.append("Historia: ").append(msg.text()).append("\n"));
 
         try {
             String choicesJson = objectMapper.writeValueAsString(gameState.getCurrentChoices());
@@ -79,7 +70,7 @@ public class MyWebSocketHandler implements WebSocketHandler {
             response.append("<choices>[]</choices>\n");
         }
 
-        response.append("Spel slut: ").append(gameState.isGameOver()).append("\n");
+        response.append("<spel-slut>").append(gameState.isGameOver()).append("</spel-slut>").append("\n");
 
         return session.send(Mono.just(session.textMessage(response.toString())));
     }

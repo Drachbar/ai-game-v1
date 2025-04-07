@@ -49,9 +49,7 @@ export class AppComponent implements OnInit, OnDestroy {
           console.error("Kunde inte parsea JSON choices:", error);
           this.choices = [];
         }
-      }
-
-      if (wholeMessage.includes('<complete-response>')) {
+      } else if (wholeMessage.includes('<complete-response>')) {
         const message = event.data.substring(19, event.data.length - 20);
 
         console.log('complete response')

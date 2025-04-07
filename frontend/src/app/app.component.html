@@ -2,13 +2,24 @@
 <button (click)="addUser()">Lägg till användare</button>
 <button (click)="test1()">visa messages</button>
 <button (click)="test2()">visa nuvarande meddelande</button>
-@for (msg of messages; track msg) {
-  <div [innerHTML]="getMarkdownMessage(msg)"></div>
+@for (msg of messages; track msg; let i = $index) {
+  <div class="divider">
+    <span>Runda {{ i + 1 }}</span>
+    <hr>
+  </div>
+  <div [innerHTML]="getMarkdownMessage(msg)" id="messages"></div>
 }
-<div [innerHTML]="getMarkdownMessage(currentResponse)"></div>
+
+@if (currentResponse) {
+  <div class="divider">
+    <span>Runda {{ messages.length + 1 }}</span>
+    <hr>
+  </div>
+  <div [innerHTML]="getMarkdownMessage(currentResponse)" id="current-response"></div>
+}
 @for (choice of choices; track choice) {
-  <button (click)="makeChoice(choice)">{{choice}}</button>
+  <button (click)="makeChoice(choice)">{{ choice }}</button>
 }
 <textarea [(ngModel)]="message" placeholder="Skriv ett meddelande..." rows="5" cols="80"></textarea>
 <button (click)="send()">Skicka</button>
-<router-outlet />
+<router-outlet/>

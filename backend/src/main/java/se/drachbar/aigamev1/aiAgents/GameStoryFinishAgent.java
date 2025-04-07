@@ -22,14 +22,16 @@ public class GameStoryFinishAgent {
     private final Map<String, OpenAiStreamingChatModel> streamingModels; // Injicera en Map av alla streaming-modeller
 
     public Mono<List<ChatMessage>> processQuery(List<ChatMessage> history, String query, String modelName, WebSocketSession session) {
-        OpenAiStreamingChatModel model = streamingModels.getOrDefault(modelName, streamingModels.get("gpt4oMiniStreamingModel"));
+        OpenAiStreamingChatModel model = streamingModels.getOrDefault(modelName, streamingModels.get("gpt4oStreamingModel"));
         List<ChatMessage> messages = new ArrayList<>();
         messages.add(new SystemMessage("""
-                Du är en kreativ berättare som fortsätter en pågående historia för ett onlinespel.
-                Fortsätt historien baserat på spelarnas val. Denna text som du skriver nu ska vara runt 500 ord.
-                Detta är den sista berättelsen, så se till att avsluta historien på ett episkt sätt.
+                Detta är den sista rundan. Du är den agent som avslutar hela historien. Se till att avsluta den på ett episkt sätt.
+                """));
+        messages.add(new SystemMessage("""
+                Du är en kreativ berättare som fortsätter och nu avslutar en pågående historia för ett onlinespel.
+                Avsluta historien baserat på spelarnas val. Denna text som du skriver nu ska vara runt 500 ord.
                 Spelarna har fått göra olika val där valen skrivs av en annan ai-agent,
-                om någon spelare gör något uppenbart dumt så kan den spelaren få dö/förlora tidigt i spelet.
+                om någon spelare gör något uppenbart dumt så kan den spelaren få dö/förlora i spelet.
                 Du avgör om spelarens val lyckas eller inte. När en spelare förlorar eller dör inkludera orden
                 "du dör" eller "du förlorar" i historien. Avsluta med att tydligt skriva för spelarna om de vann eller förlorade.
                 """));
@@ -48,6 +50,6 @@ public class GameStoryFinishAgent {
     }
 
     public Mono<List<ChatMessage>> processQuery(List<ChatMessage> history, String query, WebSocketSession session) {
-        return processQuery(history, query, "gpt4oMiniStreamingModel", session); // Default till gpt-4o-mini
+        return processQuery(history, query, "gpt4oStreamingModel", session); // Default till gpt-4o-mini
     }
 }
